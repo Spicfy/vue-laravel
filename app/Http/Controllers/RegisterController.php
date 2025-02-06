@@ -8,16 +8,28 @@ use Illuminate\Support\Facades\Hash;
 
 class RegisterController extends Controller
 {
-    public function store(Request $request){
-        $input = $request->all();
-
-        User::create([
-            'first_name' => $input['first_name'],
-            'last_name' => $input['last_name'],
-            'address' => $input['address'],
-            'email'=> $input['email'],
-            'password' => Hash::make($input['password'])
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'address' => 'nullable|string',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|string|min:8'
         ]);
-        return response()->json(['status' => true, 'message'=> 'Registration success']);
+    
+        // Create user after validation
+       $user = User::create([
+            'first_name' => $validatedData['first_name'],
+            'last_name' => $validatedData['last_name'],
+            'address' => $validatedData['address'],
+            'email' => $validatedData['email'],
+            'password' => Hash::make($validatedData['password'])
+        ]);
+
+        Auth::login($user);
+    
+        return response()->json(['status' => true, 'message'=> 'Registration success'], 201);
     }
+    
 }

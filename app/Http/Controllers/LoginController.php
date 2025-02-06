@@ -16,8 +16,8 @@ class LoginController extends Controller
             'password' => ['required'],
         ]);
         if(Auth::attempt($credentials)){
-            return response()->json(['status' => true, 'message'=> 'Success']);
+            return response()->json(['status' => true, 'message'=> 'Success'], 200);
         }
-        return response()->json(['status'=> false,'message'=> 'login Failed']);
+        return response()->json(['status'=> false,'message'=> 'login Failed'], 401);
     }
 }
