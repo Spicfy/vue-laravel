@@ -1,17 +1,16 @@
 <?php
 
-use App\Http\Controllers\RegisterController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\LoginController;
-use App\Http\Controllers\LogoutController;
 
-// Public routes
-Route::post('/register', [RegisterController::class, 'store']);
-Route::post('/login', [LoginController::class, 'check']);
-
-// Protected routes (require authentication)
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', [LoginController::class, 'user']);
-    Route::post('/logout', [LogoutController::class, 'logout']);
+use App\Http\Controllers\API\AuthController;
+ 
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'auth'
+], function ($router) {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:api');
+    Route::post('/refresh', [AuthController::class, 'refresh'])->middleware('auth:api');
+    Route::post('/profile', [AuthController::class, 'profile'])->middleware('auth:api');
 });
