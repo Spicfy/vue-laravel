@@ -5,8 +5,11 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\API\BaseController as BaseController;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Hash;
   
 class AuthController extends BaseController
 {
@@ -55,7 +58,10 @@ class AuthController extends BaseController
   
         $success = $this->respondWithToken($token);
    
-        return $this->sendResponse($success, 'User login successfully.');
+
+        // Set a cookie with the token
+    return $this->sendResponse($success, 'User login successfully.')
+    ->cookie('token', $token, config('jwt.ttl') * 60);
     }
   
     /**
@@ -78,8 +84,15 @@ class AuthController extends BaseController
     public function logout()
     {
         Auth::logout();
+
+
+        // Remove the cookie
+        $cookie = Cookie::forget('access_token');
         
-        return $this->sendResponse([], 'Successfully logged out.');
+        return response()->json([
+            'success'=> true,
+            'message' => 'Successfully logged out.'
+        ])->withCookie($cookie);
     }
   
     /**
@@ -109,4 +122,53 @@ class AuthController extends BaseController
         'expires_in' => config('jwt.ttl') * 60
     ]);
 }
+
+/**
+ * Change the password
+ * 
+ * @param \Illuminate\Http\Request $request
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function changePassword(Request $request){
+    $validator = Validator::make($request->all(), [
+        'old_password' => 'required',
+        'new_pasword' => 'required|confirmed',
+    ]);
+    if($validator->fails()){
+        return $this->sendError('Validation Error', $validator->errors(), 400);
+
+    }
+    $user = Auth::user();
+    if(!Hash::check($request->old_password, $user->password)){
+        return $this->sendError('Invalid old password', [], 400);
+    }
+    $user->password = Hash::make($request->new_password);
+    $user->save();
+    return $this->sendResponse([], 'Password changed successfully');
+}
+
+/**
+ * Change user email.
+ * 
+ * 
+ * @param \Illuminate\Http\Request $request
+ * @return \Illuminate\Http\JsonResponse
+ * 
+ */
+
+    public function changeEmail(Request $request){
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|unique:users,email' . Auth::id(),
+        ]);
+        if($validator->fails()){
+            return $this->sendError(
+            'Validation Error', $validator->errors(), 400
+            );
+        }
+
+        $user = Auth::user();
+        $user->email = $request->email;
+        $user->save();
+        return $this->sendResponse([], 'Email changed successfully');
+    }
 }
