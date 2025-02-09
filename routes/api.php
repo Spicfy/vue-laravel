@@ -17,7 +17,7 @@ Route::group([
 
 
     Route::post('/password/forgot', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.forgot');
-    Route::post('/password/reset', [AuthController::class, 'resetPassword']);
+    Route::post('/password/reset', [AuthController::class, 'resetPassword'])->name('password.reset');
 
     
 });
