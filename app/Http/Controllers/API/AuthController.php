@@ -73,7 +73,7 @@ class AuthController extends BaseController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function profile()
+    public function    getUser()
     {
         $success = Auth::user();
    

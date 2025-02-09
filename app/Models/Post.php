@@ -14,7 +14,9 @@ class Post extends Model
         'title',
         'message',
         'type',
-        'user_id' //foreign key
+        'user_id', //foreign key
+        'firstName',
+        'lastName'
     ];
     public function user(){
         return $this->belongsTo(User::class);
