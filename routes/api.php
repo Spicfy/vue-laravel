@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\ForgotPasswordController;
  
 Route::group([
     'middleware' => 'api',
@@ -14,6 +15,10 @@ Route::group([
     Route::post('/refresh', [AuthController::class, 'refresh'])->middleware('auth:api');
     Route::post('/profile', [AuthController::class, 'profile'])->middleware('auth:api');
 
+
+    Route::post('/password/forgot', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.forgot');
+    Route::post('/password/reset', [AuthController::class, 'resetPassword']);
+
     
 });
 
@@ -23,7 +28,7 @@ Route::group([
     Route::get('/user', [AuthController::class, 'getUser']);
     Route::post('/user/update', [AuthController::class, 'updateUser']);
 
-    Route::post('/user/password', [AuthController::class, 'changeePassword']);
+    Route::post('/user/password', [AuthController::class, 'changePassword']);
 
     Route::post('/user/email', [AuthController::class, 'changeEmail']);
 });

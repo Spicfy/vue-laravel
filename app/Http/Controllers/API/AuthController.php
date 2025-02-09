@@ -10,6 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ResetPasswordMail;
+
   
 class AuthController extends BaseController
 {
@@ -132,7 +136,7 @@ class AuthController extends BaseController
 public function changePassword(Request $request){
     $validator = Validator::make($request->all(), [
         'old_password' => 'required',
-        'new_pasword' => 'required|confirmed',
+        'new_paxsword' => 'required|confirmed',
     ]);
     if($validator->fails()){
         return $this->sendError('Validation Error', $validator->errors(), 400);
@@ -170,5 +174,28 @@ public function changePassword(Request $request){
         $user->email = $request->email;
         $user->save();
         return $this->sendResponse([], 'Email changed successfully');
+    }
+
+    public function forgotPassword(Request $request){
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:user,email',
+        ]);
+        if($validator->fails()){
+            return $this->sendError('Validation Error.', $validator->errors(), 400);
+        }
+        $user = User::where('email', $request->email)->first();
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        if ($status == Password::RESET_LINK_SENT) {
+            return $this->sendResponse([], 'Password reset link sent to your email.');
+        } else {
+            return $this->sendError('Email Sending Failed', ['error' => __($status)], 500);
+        }
+
+
+        
     }
 }
